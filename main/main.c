@@ -269,23 +269,21 @@ void websocket_callback(uint8_t num, WEBSOCKET_TYPE_t type, char* msg, uint64_t 
       break;
     case WEBSOCKET_DISCONNECT_EXTERNAL:
       ESP_LOGI(TAG, "client %i sent a disconnect message", num);
-      led_duty(0);
       break;
     case WEBSOCKET_DISCONNECT_INTERNAL:
       ESP_LOGI(TAG, "client %i was disconnected", num);
       break;
     case WEBSOCKET_DISCONNECT_ERROR:
       ESP_LOGI(TAG, "client %i was disconnected due to an error", num);
-      led_duty(0);
       break;
     case WEBSOCKET_TEXT:
-      if(len) { // if the message length was greater than zero
+      // if the message length was greater than zero
+      if(len) {
         switch(msg[0])
         {
           case 'L':
             if(sscanf(msg, "L%i", &value)) {
               ESP_LOGI(TAG,"LED value: %i", value);
-              led_duty(value);
               ws_server_send_text_all_from_callback(msg, len); // broadcast it!
             }
             break;
