@@ -6,6 +6,7 @@ and redirects all recieved logging data to all connected websoket clients.
 ## Getting Started 🚀
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+
 To get started you need to have a local developement environement for ESP-IDF.
 See [website](https://docs.espressif.com/projects/esp-idf/en/latest/get-started/) for ESP-IDF setup instructions.
 Once your environement is ready you need to add the websocket component to esp-idf
