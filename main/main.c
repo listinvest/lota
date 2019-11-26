@@ -277,14 +277,15 @@ void websocket_callback(uint8_t num, WEBSOCKET_TYPE_t type, char* msg, uint64_t 
       ESP_LOGI(TAG, "client %i was disconnected due to an error", num);
       break;
     case WEBSOCKET_TEXT:
-      // if the message length was greater than zero
-      if(len) {
+      if(len)
+      {
         switch(msg[0])
         {
           case 'L':
-            if(sscanf(msg, "L%i", &value)) {
+            if(sscanf(msg, "L%i", &value))
+            {
               ESP_LOGI(TAG,"LED value: %i", value);
-              ws_server_send_text_all_from_callback(msg, len); // broadcast it!
+              ws_server_send_text_all_from_callback(msg, len);
             }
             break;
           case 'M':
@@ -355,7 +356,7 @@ static void http_serve(struct netconn *conn)
   ESP_LOGI(TAG, "reading from client...");
   err = netconn_recv(conn, &inbuf);
   ESP_LOGI(TAG, "read from client");
-  if(err==ERR_OK)
+  if(err == ERR_OK)
   {
     netbuf_data(inbuf, (void**)&buf, &buflen);
     if(buf)
@@ -436,7 +437,7 @@ static void http_serve(struct netconn *conn)
     }
   }
   else
-  { // if err==ERR_OK
+  { // if err == ERR_OK
     ESP_LOGI(TAG, "error on read, closing connection");
     netconn_close(conn);
     netconn_delete(conn);
@@ -516,7 +517,7 @@ void app_main()
   wifi_setup();
   ws_server_start();
   
-  xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
+  xTaskCreate(&uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
   xTaskCreate(&server_task, "server_task", 3000, NULL, 9, NULL);
   xTaskCreate(&server_handle_task, "server_handle_task", 4000, NULL, 6, NULL);
   xTaskCreate(&count_task, "count_task", 6000, NULL, 2, NULL);
