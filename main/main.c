@@ -133,9 +133,9 @@ static void uart_event_task(void *pvParameters)
 }
 
 /* Handle WiFi events */
-static esp_err_t event_handler(void* ctx, system_event_t* event)
+static esp_err_t wifi_event_handler(void* ctx, system_event_t* event)
 {
-  const char* TAG = "event_handler";
+  const char* TAG = "wifi_event_handler";
   switch(event->event_id)
   {
     case SYSTEM_EVENT_AP_START:
@@ -197,7 +197,7 @@ static void wifi_setup()
   ESP_ERROR_CHECK(tcpip_adapter_dhcps_start(TCPIP_ADAPTER_IF_AP));
   //ESP_ERROR_CHECK(tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_AP,hostname));
   ESP_LOGI(TAG,"starting event loop");
-  ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
+  ESP_ERROR_CHECK(esp_event_loop_init(wifi_event_handler, NULL));
 
   ESP_LOGI(TAG,"initializing WiFi");
   wifi_init_config_t wifi_init_config = WIFI_INIT_CONFIG_DEFAULT();
@@ -253,6 +253,7 @@ static void uart_setup()
   
   /* Reset the pattern queue length to record at most 20 pattern positions. */
   uart_pattern_queue_reset(UART_NUM, 20);
+
   ESP_LOGI(TAG, "UART set up");
 }
 
@@ -260,7 +261,9 @@ static void uart_setup()
 void websocket_callback(uint8_t num, WEBSOCKET_TYPE_t type, char* msg, uint64_t len)
 {
   const static char* TAG = "websocket_callback";
-  int value;
+  int xPos;
+  int yPos;
+  int zPos;
 
   switch(type)
   {
@@ -281,14 +284,14 @@ void websocket_callback(uint8_t num, WEBSOCKET_TYPE_t type, char* msg, uint64_t 
       {
         switch(msg[0])
         {
-          case 'L':
-            if(sscanf(msg, "L%i", &value))
-            {
-              ESP_LOGI(TAG,"LED value: %i", value);
-              ws_server_send_text_all_from_callback(msg, len);
-            }
+          case 'P':
+            /* Message contains odometry variables */
+            ESP_LOGI(TAG, "Message contains odometry variables");
+            ESP_LOGI(TAG, "X = %c | Y = %c | Z = %c", msg[1], msg[2], msg[3]);
+            ws_server_send_text_all_from_callback(msg, len);
             break;
           case 'M':
+            /* Message contains log info */
             ESP_LOGI(TAG, "got message length %i: %s", (int)len-1, &(msg[1]));
             break;
           default:
