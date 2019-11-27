@@ -1,4 +1,4 @@
-menu "Example Options"
+menu "LOTA Options"
 
 config LED_PIN
   int "LED GPIO Pin"
