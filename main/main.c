@@ -295,8 +295,8 @@ void websocket_callback(uint8_t num, WEBSOCKET_TYPE_t type, char* msg, uint64_t 
             ESP_LOGI(TAG, "got message length %i: %s", (int)len-1, &(msg[1]));
             break;
           default:
-	          ESP_LOGI(TAG, "got an unknown message with length %i", (int)len);
-	          break;
+            ESP_LOGI(TAG, "got an unknown message with length %i", (int)len);
+            break;
         }
       }
       break;
