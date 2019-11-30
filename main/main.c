@@ -174,89 +174,6 @@ static esp_err_t wifi_event_handler(void* ctx, system_event_t* event)
   return ESP_OK;
 }
 
-/* Setup WiFi */
-static void wifi_setup()
-{
-  const char* TAG = "wifi_setup";
-
-  ESP_LOGI(TAG,"starting tcpip adapter");
-  tcpip_adapter_init();
-  nvs_flash_init();
-  ESP_ERROR_CHECK(tcpip_adapter_dhcps_stop(TCPIP_ADAPTER_IF_AP));
-  //tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_AP,"esp32");
-  tcpip_adapter_ip_info_t info;
-  memset(&info, 0, sizeof(info));
-  IP4_ADDR(&info.ip, 192, 168, 4, 1);
-  IP4_ADDR(&info.gw, 192, 168, 4, 1);
-  IP4_ADDR(&info.netmask, 255, 255, 255, 0);
-  ESP_LOGI(TAG,"setting gateway IP");
-  ESP_ERROR_CHECK(tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_AP, &info));
-  //ESP_ERROR_CHECK(tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_AP,"esp32"));
-  //ESP_LOGI(TAG,"set hostname to \"%s\"",hostname);
-  ESP_LOGI(TAG,"starting DHCPS adapter");
-  ESP_ERROR_CHECK(tcpip_adapter_dhcps_start(TCPIP_ADAPTER_IF_AP));
-  //ESP_ERROR_CHECK(tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_AP,hostname));
-  ESP_LOGI(TAG,"starting event loop");
-  ESP_ERROR_CHECK(esp_event_loop_init(wifi_event_handler, NULL));
-
-  ESP_LOGI(TAG,"initializing WiFi");
-  wifi_init_config_t wifi_init_config = WIFI_INIT_CONFIG_DEFAULT();
-  ESP_ERROR_CHECK(esp_wifi_init(&wifi_init_config));
-  ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
-  ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-
-  wifi_config_t wifi_config =
-  {
-    .ap =
-    {
-      .ssid = AP_SSID,
-      .password= AP_PSSWD,
-      .channel = 0,
-      .authmode = WIFI_AUTH_WPA2_PSK,
-      .ssid_hidden = 0,
-      .max_connection = 4,
-      .beacon_interval = 100
-    }
-  };
-
-  ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));
-  ESP_ERROR_CHECK(esp_wifi_start());
-  ESP_LOGI(TAG,"WiFi set up");
-}
-
-
-/* Setup UART */
-static void uart_setup()
-{
-  const char* TAG = "uart_setup";
-
-  uart_config_t uart_config =
-  {
-    .baud_rate = 115200,
-    .data_bits = UART_DATA_8_BITS,
-    .parity = UART_PARITY_DISABLE,
-    .stop_bits = UART_STOP_BITS_1,
-    .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
-  };
-
-  /* Set UART configurations */
-  uart_param_config(UART_NUM, &uart_config);
-  
-  /* Set UART pins (using UART0 default pins ie no changes.) */
-  uart_set_pin(UART_NUM, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-  
-  /* Install UART driver, and get the queue */
-  uart_driver_install(UART_NUM, BUF_SIZE * 2, BUF_SIZE * 2, 20, &xUartQueue, 0);
-
-  /* Set uart pattern detect function. */
-  uart_enable_pattern_det_baud_intr(UART_NUM, '+', PATTERN_CHR_NUM, 9, 0, 0);
-  
-  /* Reset the pattern queue length to record at most 20 pattern positions. */
-  uart_pattern_queue_reset(UART_NUM, 20);
-
-  ESP_LOGI(TAG, "UART set up");
-}
-
 /* Handle websocket events */
 void websocket_callback(uint8_t num, WEBSOCKET_TYPE_t type, char* msg, uint64_t len)
 {
@@ -310,6 +227,88 @@ void websocket_callback(uint8_t num, WEBSOCKET_TYPE_t type, char* msg, uint64_t 
       ESP_LOGI(TAG, "client %i responded to the ping" ,num);
       break;
   }
+}
+
+/* Setup WiFi */
+static void wifi_setup()
+{
+  const char* TAG = "wifi_setup";
+
+  ESP_LOGI(TAG,"starting tcpip adapter");
+  tcpip_adapter_init();
+  nvs_flash_init();
+  ESP_ERROR_CHECK(tcpip_adapter_dhcps_stop(TCPIP_ADAPTER_IF_AP));
+  //tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_AP,"esp32");
+  tcpip_adapter_ip_info_t info;
+  memset(&info, 0, sizeof(info));
+  IP4_ADDR(&info.ip, 192, 168, 4, 1);
+  IP4_ADDR(&info.gw, 192, 168, 4, 1);
+  IP4_ADDR(&info.netmask, 255, 255, 255, 0);
+  ESP_LOGI(TAG,"setting gateway IP");
+  ESP_ERROR_CHECK(tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_AP, &info));
+  //ESP_ERROR_CHECK(tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_AP,"esp32"));
+  //ESP_LOGI(TAG,"set hostname to \"%s\"",hostname);
+  ESP_LOGI(TAG,"starting DHCPS adapter");
+  ESP_ERROR_CHECK(tcpip_adapter_dhcps_start(TCPIP_ADAPTER_IF_AP));
+  //ESP_ERROR_CHECK(tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_AP,hostname));
+  ESP_LOGI(TAG,"starting event loop");
+  ESP_ERROR_CHECK(esp_event_loop_init(wifi_event_handler, NULL));
+
+  ESP_LOGI(TAG,"initializing WiFi");
+  wifi_init_config_t wifi_init_config = WIFI_INIT_CONFIG_DEFAULT();
+  ESP_ERROR_CHECK(esp_wifi_init(&wifi_init_config));
+  ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+  ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
+
+  wifi_config_t wifi_config =
+  {
+    .ap =
+    {
+      .ssid = AP_SSID,
+      .password= AP_PSSWD,
+      .channel = 0,
+      .authmode = WIFI_AUTH_WPA2_PSK,
+      .ssid_hidden = 0,
+      .max_connection = 4,
+      .beacon_interval = 100
+    }
+  };
+
+  ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));
+  ESP_ERROR_CHECK(esp_wifi_start());
+  ESP_LOGI(TAG,"WiFi set up");
+}
+
+/* Setup UART */
+static void uart_setup()
+{
+  const char* TAG = "uart_setup";
+
+  uart_config_t uart_config =
+  {
+    .baud_rate = 115200,
+    .data_bits = UART_DATA_8_BITS,
+    .parity = UART_PARITY_DISABLE,
+    .stop_bits = UART_STOP_BITS_1,
+    .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
+  };
+
+  /* Set UART configurations */
+  uart_param_config(UART_NUM, &uart_config);
+  
+  /* Set UART pins (using UART0 default pins ie no changes.) */
+  uart_set_pin(UART_NUM, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+  
+  /* Install UART driver, and get the queue */
+  uart_driver_install(UART_NUM, BUF_SIZE * 2, BUF_SIZE * 2, 20, &xUartQueue, 0);
+
+  /* Set uart pattern detect function. */
+  uart_enable_pattern_det_baud_intr(UART_NUM, '+', PATTERN_CHR_NUM, 9, 0, 0);
+  
+  /* Reset the pattern queue length to record at most 20 pattern positions. */
+  uart_pattern_queue_reset(UART_NUM, 20);
+
+  ESP_LOGI(TAG, "UART set up");
 }
 
 /* Serve web files to client */
