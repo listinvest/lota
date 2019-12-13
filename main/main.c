@@ -19,9 +19,9 @@
 
 #include "esp_wifi.h"
 #include "esp_log.h"
-#include "esp_event_loop.h"
+// #include "esp_event_loop.h"
+#include "esp_event.h"
 #include "nvs_flash.h"
-#include "driver/ledc.h"
 #include "driver/uart.h"
 
 #include "string.h"
@@ -68,7 +68,7 @@ static void uart_event_task(void *pvParameters)
           uart_read_bytes(UART_NUM, dtmp, event.size, portMAX_DELAY);
           ESP_LOGI(TAG, "[DATA EVT]:");
           uart_write_bytes(UART_NUM, (const char*) dtmp, event.size);
-          ws_server_send_text_all((const char*) dtmp, event.size);
+          ws_server_send_text_all((char*) dtmp, event.size);
           break;
         /* Event of HW FIFO overflow detected */
         case UART_FIFO_OVF:
@@ -178,9 +178,6 @@ static esp_err_t wifi_event_handler(void* ctx, system_event_t* event)
 void websocket_callback(uint8_t num, WEBSOCKET_TYPE_t type, char* msg, uint64_t len)
 {
   const static char* TAG = "websocket_callback";
-  int xPos;
-  int yPos;
-  int zPos;
 
   switch(type)
   {
@@ -235,7 +232,8 @@ static void wifi_setup()
   const char* TAG = "wifi_setup";
 
   ESP_LOGI(TAG,"starting tcpip adapter");
-  tcpip_adapter_init();
+  // tcpip_adapter_init();
+  esp_netif_init();
   nvs_flash_init();
   ESP_ERROR_CHECK(tcpip_adapter_dhcps_stop(TCPIP_ADAPTER_IF_AP));
   //tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_AP,"esp32");
@@ -447,7 +445,7 @@ static void http_serve(struct netconn *conn)
   }
 }
 
-/* Handles clients when they first connect and passes them to queue */
+/* Handle clients when they first connect and passes them to queue */
 static void server_task(void* pvParameters)
 {
   const static char* TAG = "server_task";
@@ -481,13 +479,16 @@ static void server_handle_task(void* pvParameters)
   const static char* TAG = "server_handle_task";
   struct netconn* conn;
   ESP_LOGI(TAG, "task starting");
-  for(;;) {
+  for(;;)
+  {
     xQueueReceive(xClientQueue, &conn, portMAX_DELAY);
-    if(!conn) continue;
+    if(!conn)
+      continue;
     http_serve(conn);
   }
   vTaskDelete(NULL);
 }
+
 /* Send counter value to clients periodically */
 static void count_task(void* pvParameters)
 {
@@ -497,7 +498,7 @@ static void count_task(void* pvParameters)
   int clients;
   const static char* word = "%i";
   uint8_t n = 0;
-  const int DELAY = 1000 / portTICK_PERIOD_MS; // 1 second
+  const int DELAY = 1000 / portTICK_PERIOD_MS;
 
   ESP_LOGI(TAG, "starting task");
   for(;;)
