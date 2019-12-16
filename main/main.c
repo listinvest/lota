@@ -51,6 +51,7 @@ static void uart_event_task(void *pvParameters)
   uart_event_t event;
   size_t buffered_size;
   uint8_t* dtmp = (uint8_t*) malloc(RD_BUF_SIZE);
+
   for(;;)
   {
     /* Blocked waiting for UART event */
@@ -136,6 +137,7 @@ static void uart_event_task(void *pvParameters)
 static esp_err_t wifi_event_handler(void* ctx, system_event_t* event)
 {
   const char* TAG = "wifi_event_handler";
+
   switch(event->event_id)
   {
     case SYSTEM_EVENT_AP_START:
@@ -185,83 +187,31 @@ void websocket_callback(uint8_t num, WEBSOCKET_TYPE_t type, char* msg, uint64_t 
       ESP_LOGI(TAG, "client %i connected!", num);
       break;
     case WEBSOCKET_DISCONNECT_EXTERNAL:
-      ESP_LOGI(TAG, "client %i sent a disconnect message", num);
+      ESP_LOGW(TAG, "client %i sent a disconnect message", num);
       break;
     case WEBSOCKET_DISCONNECT_INTERNAL:
-      ESP_LOGI(TAG, "client %i was disconnected", num);
+      ESP_LOGE(TAG, "client %i was disconnected", num);
       break;
     case WEBSOCKET_DISCONNECT_ERROR:
-      ESP_LOGI(TAG, "client %i was disconnected due to an error", num);
+      ESP_LOGE(TAG, "client %i was disconnected due to an error", num);
       break;
     case WEBSOCKET_TEXT:
       if(len)
       {
         switch(msg[0])
         {
-          case 'P':
-            /* Message contains odometry variables */
+          case 'O':
+            /* Message contains Odometry variables */
             ESP_LOGI(TAG, "Message contains odometry variables");
-            ESP_LOGI(TAG, "X = %c | Y = %c | Z = %c", msg[1], msg[2], msg[3]);
-            ws_server_send_text_all_from_callback(msg, len);
+            ESP_LOGI(TAG, "X = %c | Y = %c | R = %c", msg[1], msg[2], msg[3]);
             break;
-          case 'M':
-            /* Message contains log info */
+          case 'L':
+            /* Message contains Logging info */
+            ESP_LOGI(TAG, "Message contains Logging info");
             ESP_LOGI(TAG, "got message length %i: %s", (int)len-1, &(msg[1]));
             break;
           default:
-            ESP_LOGI(TAG, "got an unknown message with length %i", (int)len);
-            break;
-        }
-      }
-      break;
-    case WEBSOCKET_BIN:
-      ESP_LOGI(TAG, "client %i sent binary message of size %i:\n%s", num, (uint32_t)len, msg);
-      break;
-    case WEBSOCKET_PING:
-      ESP_LOGI(TAG, "client %i pinged us with message of size %i:\n%s", num, (uint32_t)len, msg);
-      break;
-    case WEBSOCKET_PONG:
-      ESP_LOGI(TAG, "client %i responded to the ping" ,num);
-      break;
-  }
-}
-<<<<<<< HEAD
-/* Handle websocket events */
-void websocket_callback(uint8_t num, WEBSOCKET_TYPE_t type, char* msg, uint64_t len)
-{
-  const static char* TAG = "websocket_callback";
-
-  switch(type)
-  {
-    case WEBSOCKET_CONNECT:
-      ESP_LOGI(TAG, "client %i connected!", num);
-      break;
-    case WEBSOCKET_DISCONNECT_EXTERNAL:
-      ESP_LOGI(TAG, "client %i sent a disconnect message", num);
-      break;
-    case WEBSOCKET_DISCONNECT_INTERNAL:
-      ESP_LOGI(TAG, "client %i was disconnected", num);
-      break;
-    case WEBSOCKET_DISCONNECT_ERROR:
-      ESP_LOGI(TAG, "client %i was disconnected due to an error", num);
-      break;
-    case WEBSOCKET_TEXT:
-      if(len)
-      {
-        switch(msg[0])
-        {
-          case 'P':
-            /* Message contains odometry variables */
-            ESP_LOGI(TAG, "Message contains odometry variables");
-            ESP_LOGI(TAG, "X = %c | Y = %c | Z = %c", msg[1], msg[2], msg[3]);
-            ws_server_send_text_all_from_callback(msg, len);
-            break;
-          case 'M':
-            /* Message contains log info */
-            ESP_LOGI(TAG, "got message length %i: %s", (int)len-1, &(msg[1]));
-            break;
-          default:
-            ESP_LOGI(TAG, "got an unknown message with length %i", (int)len);
+            ESP_LOGW(TAG, "got an unknown message with length %i", (int)len);
             break;
         }
       }
@@ -278,16 +228,13 @@ void websocket_callback(uint8_t num, WEBSOCKET_TYPE_t type, char* msg, uint64_t 
   }
 }
 
-=======
->>>>>>> parent of 48015b0... cleaning
 /* Setup WiFi */
 static void wifi_setup()
 {
   const char* TAG = "wifi_setup";
 
   ESP_LOGI(TAG,"starting tcpip adapter");
-  // tcpip_adapter_init();
-  esp_netif_init();
+  tcpip_adapter_init();
   nvs_flash_init();
   ESP_ERROR_CHECK(tcpip_adapter_dhcps_stop(TCPIP_ADAPTER_IF_AP));
   //tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_AP,"esp32");
@@ -330,7 +277,6 @@ static void wifi_setup()
   ESP_ERROR_CHECK(esp_wifi_start());
   ESP_LOGI(TAG,"WiFi set up");
 }
-
 
 /* Setup UART */
 static void uart_setup()
@@ -381,7 +327,7 @@ static void http_serve(struct netconn *conn)
   static uint16_t buflen;
   static err_t err;
 
-  /* Default page */
+  /* Home page */
   extern const uint8_t index_html_start[] asm("_binary_index_html_start");
   extern const uint8_t index_html_end[] asm("_binary_index_html_end");
   const uint32_t index_html_len = index_html_end - index_html_start;
@@ -406,7 +352,7 @@ static void http_serve(struct netconn *conn)
   extern const uint8_t error_html_end[] asm("_binary_error_html_end");
   const uint32_t error_html_len = error_html_end - error_html_start;
  
-  /* allow a connection timeout of 1 second */
+  /* Allow a connection timeout of 1 second */
   netconn_set_recvtimeout(conn, 1000);
   ESP_LOGI(TAG, "reading from client...");
   err = netconn_recv(conn, &inbuf);
@@ -427,7 +373,7 @@ static void http_serve(struct netconn *conn)
         netbuf_delete(inbuf);
       }
 
-      /* Default page websocket */
+      /* Home page websocket */
       else if(strstr(buf, "GET / ") && strstr(buf, "Upgrade: websocket"))
       {
         ESP_LOGI(TAG, "Requesting websocket on /");

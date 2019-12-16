@@ -8,8 +8,14 @@ function sendText(text) {
   websocket.send(text);
 }
 
+function update(data) {
+  var element = document.getElementById("pb");
+  element.style.width = data + '%';
+}
+
 websocket.onmessage = function(evt) {
   document.getElementById("msg").innerHTML = evt.data;
+  update(evt.data);
 }
 
 websocket.onopen = function(evt) {

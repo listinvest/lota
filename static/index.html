@@ -32,23 +32,27 @@
         <div class="col-sm-4">
           <h3>ESP32 Info</h3>
           Status: <p id="status"></p>
-          Message: <p id="msg"></p>
         </div>
 
         <div class="col-sm-4">
           <h3>ESP32 Live Counter</h3>
-          <p>Lorem ipsum dolor..</p>
+          <p id="msg"></p>
           <div class="progress">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:40%"></div>
+            <div id="pb"
+                 class="progress-bar progress-bar-striped progress-bar-animated"
+                 style="width:0%"></div>
           </div>
         </div>
 
         <div class="col-sm-4">
           <h3>Send Message to ESP32</h3>
-          <p>Lorem ipsum dolor..</p>
           <form class="form-inline">
             <input type="text" class="form-control" id="test-msg">&nbsp;
-            <button type="button" class="btn btn-primary" onclick="sendText(document.getElementById('test-msg').value)"><i class="fas fa-paper-plane"></i></button>
+            <button type="button"
+                    class="btn btn-primary"
+                    onclick="sendText(document.getElementById('test-msg').value)">
+              <i class="fas fa-paper-plane"></i>
+            </button>
           </form>
         </div>
 
