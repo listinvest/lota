@@ -19,8 +19,7 @@
 
 #include "esp_wifi.h"
 #include "esp_log.h"
-// #include "esp_event_loop.h"
-#include "esp_event.h"
+#include "esp_event_loop.h"
 #include "nvs_flash.h"
 #include "driver/uart.h"
 
@@ -37,6 +36,7 @@
 received by receiver which defines a UART pattern */
 #define PATTERN_CHR_NUM               3
 #define BUF_SIZE                      1024
+#define BAUDRATE                      115200
 #define RD_BUF_SIZE                   BUF_SIZE
 
 static QueueHandle_t xUartQueue;
@@ -178,6 +178,58 @@ static esp_err_t wifi_event_handler(void* ctx, system_event_t* event)
 void websocket_callback(uint8_t num, WEBSOCKET_TYPE_t type, char* msg, uint64_t len)
 {
   const static char* TAG = "websocket_callback";
+  
+  switch(type)
+  {
+    case WEBSOCKET_CONNECT:
+      ESP_LOGI(TAG, "client %i connected!", num);
+      break;
+    case WEBSOCKET_DISCONNECT_EXTERNAL:
+      ESP_LOGI(TAG, "client %i sent a disconnect message", num);
+      break;
+    case WEBSOCKET_DISCONNECT_INTERNAL:
+      ESP_LOGI(TAG, "client %i was disconnected", num);
+      break;
+    case WEBSOCKET_DISCONNECT_ERROR:
+      ESP_LOGI(TAG, "client %i was disconnected due to an error", num);
+      break;
+    case WEBSOCKET_TEXT:
+      if(len)
+      {
+        switch(msg[0])
+        {
+          case 'P':
+            /* Message contains odometry variables */
+            ESP_LOGI(TAG, "Message contains odometry variables");
+            ESP_LOGI(TAG, "X = %c | Y = %c | Z = %c", msg[1], msg[2], msg[3]);
+            ws_server_send_text_all_from_callback(msg, len);
+            break;
+          case 'M':
+            /* Message contains log info */
+            ESP_LOGI(TAG, "got message length %i: %s", (int)len-1, &(msg[1]));
+            break;
+          default:
+            ESP_LOGI(TAG, "got an unknown message with length %i", (int)len);
+            break;
+        }
+      }
+      break;
+    case WEBSOCKET_BIN:
+      ESP_LOGI(TAG, "client %i sent binary message of size %i:\n%s", num, (uint32_t)len, msg);
+      break;
+    case WEBSOCKET_PING:
+      ESP_LOGI(TAG, "client %i pinged us with message of size %i:\n%s", num, (uint32_t)len, msg);
+      break;
+    case WEBSOCKET_PONG:
+      ESP_LOGI(TAG, "client %i responded to the ping" ,num);
+      break;
+  }
+}
+<<<<<<< HEAD
+/* Handle websocket events */
+void websocket_callback(uint8_t num, WEBSOCKET_TYPE_t type, char* msg, uint64_t len)
+{
+  const static char* TAG = "websocket_callback";
 
   switch(type)
   {
@@ -226,6 +278,8 @@ void websocket_callback(uint8_t num, WEBSOCKET_TYPE_t type, char* msg, uint64_t 
   }
 }
 
+=======
+>>>>>>> parent of 48015b0... cleaning
 /* Setup WiFi */
 static void wifi_setup()
 {
@@ -277,6 +331,7 @@ static void wifi_setup()
   ESP_LOGI(TAG,"WiFi set up");
 }
 
+
 /* Setup UART */
 static void uart_setup()
 {
@@ -284,7 +339,7 @@ static void uart_setup()
 
   uart_config_t uart_config =
   {
-    .baud_rate = 115200,
+    .baud_rate = BAUDRATE,
     .data_bits = UART_DATA_8_BITS,
     .parity = UART_PARITY_DISABLE,
     .stop_bits = UART_STOP_BITS_1,
