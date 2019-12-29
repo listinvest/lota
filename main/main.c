@@ -61,7 +61,7 @@ static void uart_event_task(void *pvParameters)
       ESP_LOGI(TAG, "uart[%d] event:", UART_NUM);
       switch(event.type)
       {
-        /* Event of UART receving data: We'd better handler data event fast,
+        /* Event of UART receiving data: We'd better handler data event fast,
         there would be much more data events than other types of events.
         If we take too much time on data event, the queue might be full.*/
         case UART_DATA:
