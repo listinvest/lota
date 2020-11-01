@@ -1,1 +1,4 @@
-COMPONENT_EMBED_FILES := ../static/error.html ../static/favicon.ico ../static/index.html ../static/style.css ../static/script.js
+#
+# "main" pseudo-component makefile.
+#
+# (Uses default behaviour of compiling all source files in directory, adding 'include' to include path.)

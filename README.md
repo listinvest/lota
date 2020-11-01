@@ -1,3 +1,13 @@
+<!-- ![](https://github.com/<OWNER>/<REPOSITORY>/workflows/<WORKFLOW_NAME>/badge.svg) -->
+![GitHub CI workflow status](https://github.com/kaizoku-oh/lota/workflows/Build/badge.svg)
+![GitHub Release workflow status](https://github.com/kaizoku-oh/lota/workflows/Build/badge.svg)
+![GitHub release](https://img.shields.io/github/v/release/kaizoku-oh/lota)
+![GitHub issues](https://img.shields.io/github/issues/kaizoku-oh/lota)
+![GitHub top language](https://img.shields.io/github/languages/top/kaizoku-oh/lota)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+
+![Twitter follow](https://img.shields.io/twitter/follow/kaizoku_ouh?style=social)
+
 # LOTA: Logging Over The Air
 
 LOTA is a remote logging system based on ESP32, making remote logging and debugging in robotics applications easier. It does this by connecting to the serial port of any embedded system and redirects all received logging data to all connected websocket clients.
