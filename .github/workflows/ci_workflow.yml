@@ -1,0 +1,25 @@
+
+name: ESP-IDF
+
+on: [push]
+
+jobs:
+  vm_job:
+    runs-on: ubuntu-latest
+    name: Run on VM
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          echo This job does not specify a container.
+          echo It runs directly on the virtual machine.
+          echo $PATH
+  container_job:
+    runs-on: ubuntu-latest
+    name: Run in container
+    container: espressif/idf
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          echo This job does specify a container.
+          echo It runs in the container instead of the VM.
+          echo $PATH
