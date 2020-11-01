@@ -4,14 +4,17 @@ on: [push]
 
 jobs:
   container_job:
-    runs-on: ubuntu-latest
-    name: Run in container
+    # runs-on: ubuntu-latest
+    # name: Run in container
     container: espressif/idf
     steps:
       - uses: actions/checkout@v2
       - run: |
-          echo This job does specify a container.
-          echo It runs in the container instead of the VM.
-          echo $PATH
           echo $IDF_PATH
           ls -la
+          env
+      - run: |
+          sh $IDF_PATH/export.sh
+          ls -la $IDF_PATH
+      - run: |
+          idf.py
